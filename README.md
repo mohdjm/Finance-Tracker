@@ -12,8 +12,8 @@ A beginner-friendly Python CLI app to log expenses and save them into a `.csv` f
 - Built-in `csv` and `datetime` modules
 
 ## Next Steps
-- View monthly summary
 - Filter by category
+- Delete or edit entries
 - Add simple dashboard (Phase 2+)
 
 Created by [@mohdjm](https://github.com/mohdjm)
