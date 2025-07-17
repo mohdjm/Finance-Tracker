@@ -1,63 +1,76 @@
 import csv
 from datetime import datetime
 
-def add_expense():
-    name = input("Expense name: ")
-    amount = float(input("Amount (RM): "))
-    category = input("Category (e.g. Therapy, Debt, Food): ")
-    date = input("Date (YYYY-MM-DD, leave blank for today): ")
+FILENAME = "expenses.csv"
 
+# Load existing expenses
+def load_expenses():
+    expenses = []
+    try:
+        with open(FILENAME, mode="r", newline='') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                expenses.append({
+                    "date": row["date"],
+                    "category": row["category"],
+                    "amount": float(row["amount"])
+                })
+    except FileNotFoundError:
+        pass
+    return expenses
+
+# Save all expenses to file
+def save_expenses(expenses):
+    with open(FILENAME, mode="w", newline='') as file:
+        fieldnames = ["date", "category", "amount"]
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        for expense in expenses:
+            writer.writerow(expense)
+
+# Add a new expense
+def add_expense(expenses):
+    date = input("Enter the date (YYYY-MM-DD) or leave blank for today: ").strip()
     if not date:
         date = datetime.today().strftime('%Y-%m-%d')
+    category = input("Enter the category: ").strip()
+    amount = float(input("Enter the amount: ").strip())
+    new_expense = {"date": date, "category": category, "amount": amount}
+    expenses.append(new_expense)
+    save_expenses(expenses)
+    print("Expense added and saved.")
 
-    with open("expenses.csv", mode="a", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow([name, amount, category, date])
+# View all expenses
+def view_expenses(expenses):
+    if not expenses:
+        print("No expenses to show.")
+    else:
+        print("\n--- Your Expenses ---")
+        for exp in expenses:
+            print(f"{exp['date']} | {exp['category'].title()} | RM {exp['amount']:.2f}")
+        print("----------------------")
 
-    print("✅ Expense added!")
+# Main loop
+def main():
+    print("📒 Welcome to Your Finance Tracker (CSV Edition)")
+    expenses = load_expenses()
 
-def view_summary():
-    total = 0
-    category_totals = {}
-
-    try:
-        with open("expenses.csv", mode="r") as file:
-            reader = csv.reader(file)
-            for row in reader:
-                try:
-                    name, amount, category, date = row
-                    amount = float(amount)
-                    total += amount
-                    category_totals[category] = category_totals.get(category, 0) + amount
-                except ValueError:
-                    continue  # skip bad lines
-
-        print("\n💸 Total Expenses: RM{:.2f}".format(total))
-        print("📊 Breakdown by Category:")
-        for category, amt in category_totals.items():
-            print(f"- {category}: RM{amt:.2f}")
-        print()
-
-    except FileNotFoundError:
-        print("⚠️ No expense data found.\n")
-
-def show_menu():
     while True:
-        print("=== Personal Finance Tracker ===")
+        print("\nMenu:")
         print("1. Add Expense")
-        print("2. View Summary")
-        print("3. Exit")
-
-        choice = input("Choose an option: ")
+        print("2. View Expenses")
+        print("3. Quit")
+        choice = input("Choose an option: ").strip()
 
         if choice == "1":
-            add_expense()
+            add_expense(expenses)
         elif choice == "2":
-            view_summary()
+            view_expenses(expenses)
         elif choice == "3":
-            print("👋 Exiting... Goodbye!")
+            print("Goodbye! Your data is saved.")
             break
         else:
-            print("❌ Invalid choice. Try again.\n")
-# Run the menu
-show_menu()
+            print("Invalid choice. Try again.")
+
+if __name__ == "__main__":
+    main()
